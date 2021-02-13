@@ -1,3 +1,10 @@
+# DL-DIY potential project ideas
+- use pre-trained models to evaluate uncertainty on other datasets and settings: e.g. [foggy images](http://people.ee.ethz.ch/~csakarid/Model_adaptation_SFSU_dense/), [night images](https://www.trace.ethz.ch/publications/2019/GCMA_UIoU/), [unknown objects](http://www.6d-vision.com/lostandfounddataset), [various image augmentation artefacts (e.g. sun glare](https://github.com/albumentations-team/albumentations).
+- implement other strategies besides MC-Dropout for generating ensembles: e.g. [test-time data-augmentation](https://arxiv.org/abs/2002.06470), [perturbing BatchNorm statistics](https://arxiv.org/abs/1802.06455)
+- simpler architectures, tasks and datasets, e.g. CIFAR-10, MNIST, can be considered for projects.
+
+---------------
+
 # evaluating_bdl
 
 ![overview image](evaluating_bdl_.png)
