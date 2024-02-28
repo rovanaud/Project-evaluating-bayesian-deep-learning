@@ -32,7 +32,7 @@ print ("num_train_batches:", num_train_batches)
 
 train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 
-network = ToyNet(model_id, project_dir="/root/evaluating_bdl/toyRegression").cuda()
+network = ToyNet(model_id, project_dir="./root/evaluating_bdl/toyRegression").to(device)
 
 optimizer = torch.optim.Adam(network.parameters(), lr=learning_rate)
 
@@ -46,8 +46,8 @@ for epoch in range(num_epochs):
     network.train() # (set in training mode, this affects BatchNorm and dropout)
     batch_losses = []
     for step, (x, y) in enumerate(train_loader):
-        x = Variable(x).cuda().unsqueeze(1) # (shape: (batch_size, 1))
-        y = Variable(y).cuda().unsqueeze(1) # (shape: (batch_size, 1))
+        x = Variable(x).to(device).unsqueeze(1) # (shape: (batch_size, 1))
+        y = Variable(y).to(device).unsqueeze(1) # (shape: (batch_size, 1))
 
         mean = network(x) # (shape: (batch_size, ))
 

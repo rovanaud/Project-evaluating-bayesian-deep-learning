@@ -36,13 +36,13 @@ for j in range(10):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 
     init_param_values = {}
-    network = ToyNet(model_id, project_dir="/root/evaluating_bdl/toyClassification").cuda()
+    network = ToyNet(model_id, project_dir="./root/evaluating_bdl/toyClassification").to(device)
     for name, param in network.named_parameters():
         init_param_values[name] = param.data
 
     M = 4
     for i in range(M):
-        network = ToyNet(model_id + "_%d" % i, project_dir="/root/evaluating_bdl/toyClassification").cuda()
+        network = ToyNet(model_id + "_%d" % i, project_dir="./root/evaluating_bdl/toyClassification").to(device)
 
         for name, param in network.named_parameters():
             param.data = torch.tensor(init_param_values[name]) # NOTE! create a copy!
@@ -61,8 +61,8 @@ for j in range(10):
             network.train() # (set in training mode, this affects BatchNorm and dropout)
             batch_losses = []
             for step, (x, y) in enumerate(train_loader):
-                x = Variable(x).cuda() # (shape: (batch_size, 2))
-                y = Variable(y).cuda() # (shape: (batch_size, ))
+                x = Variable(x).to(device) # (shape: (batch_size, 2))
+                y = Variable(y).to(device) # (shape: (batch_size, ))
 
                 logits = network(x) # (shape: (batch_size, num_classes)) (num_classes==2)
 

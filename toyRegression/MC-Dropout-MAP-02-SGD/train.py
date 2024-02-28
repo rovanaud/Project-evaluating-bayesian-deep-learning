@@ -52,7 +52,7 @@ train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=bat
 
 M = 10
 for i in range(M):
-    network = ToyNet(model_id + "_%d" % i, project_dir="/root/evaluating_bdl/toyRegression").cuda()
+    network = ToyNet(model_id + "_%d" % i, project_dir="./root/evaluating_bdl/toyRegression").to(device)
 
     optimizer = torch.optim.SGD(network.parameters(), lr=learning_rate)
 
@@ -67,8 +67,8 @@ for i in range(M):
         network.train() # (set in training mode, this affects BatchNorm and dropout)
         batch_losses = []
         for step, (x, y) in enumerate(train_loader):
-            x = Variable(x).cuda().unsqueeze(1) # (shape: (batch_size, 1))
-            y = Variable(y).cuda().unsqueeze(1) # (shape: (batch_size, 1))
+            x = Variable(x).to(device).unsqueeze(1) # (shape: (batch_size, 1))
+            y = Variable(y).to(device).unsqueeze(1) # (shape: (batch_size, 1))
 
             outputs = network(x)
             mean = outputs[0] # (shape: (batch_size, ))

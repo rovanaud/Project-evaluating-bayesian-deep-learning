@@ -124,7 +124,7 @@ for i in range(10):
 
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 
-    network = ToyNet(model_id, project_dir="/root/evaluating_bdl/toyRegression").cuda()
+    network = ToyNet(model_id, project_dir="./root/evaluating_bdl/toyRegression").to(device)
 
     optimizer = SGD(network.parameters(), momentum=(1.0-eta), lr=learning_rate)
 
@@ -139,8 +139,8 @@ for i in range(10):
         network.train() # (set in training mode, this affects BatchNorm and dropout)
         batch_losses = []
         for step, (x, y) in enumerate(train_loader):
-            x = Variable(x).cuda().unsqueeze(1) # (shape: (batch_size, 1))
-            y = Variable(y).cuda().unsqueeze(1) # (shape: (batch_size, 1))
+            x = Variable(x).to(device).unsqueeze(1) # (shape: (batch_size, 1))
+            y = Variable(y).to(device).unsqueeze(1) # (shape: (batch_size, 1))
 
             outputs = network(x)
             mean = outputs[0] # (shape: (batch_size, ))
@@ -161,7 +161,7 @@ for i in range(10):
             loss_noise = 0.0
             for param in network.parameters():
                 if param.requires_grad:
-                    loss_noise += (1.0/math.sqrt(N))*math.sqrt(2.0*eta/lr)*torch.sum(param*Variable(torch.normal(torch.zeros(param.size()), std=1.0).cuda()))
+                    loss_noise += (1.0/math.sqrt(N))*math.sqrt(2.0*eta/lr)*torch.sum(param*Variable(torch.normal(torch.zeros(param.size()), std=1.0).to(device)))
 
             loss = loss_likelihood + loss_prior + loss_noise
 

@@ -18,73 +18,76 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import cv2
 
-# NOTE! change this to not overwrite all log data when you train the model:
-model_id = "Ensemble-Adam_1_M1024"
+def train():
 
-num_epochs = 150
-batch_size = 32
-learning_rate = 0.001
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-loss_fn = nn.CrossEntropyLoss()
+    num_epochs = 150
+    batch_size = 32
+    learning_rate = 0.001
 
-train_dataset = ToyDataset()
+    loss_fn = nn.CrossEntropyLoss()
 
-num_train_batches = int(len(train_dataset)/batch_size)
-print ("num_train_batches:", num_train_batches)
+    train_dataset = ToyDataset()
 
-train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
+    num_train_batches = int(len(train_dataset)/batch_size)
+    print ("num_train_batches:", num_train_batches)
 
-M = 1024
-for i in range(M):
-    network = ToyNet(model_id + "_%d" % i, project_dir="/root/evaluating_bdl/toyClassification").cuda()
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 
-    optimizer = torch.optim.Adam(network.parameters(), lr=learning_rate)
+    M = 10
+    model_id = "Ensemble-Adam_1_M" + str(M)
 
-    epoch_losses_train = []
-    for epoch in range(num_epochs):
-        print ("###########################")
-        print ("######## NEW EPOCH ########")
-        print ("###########################")
-        print ("epoch: %d/%d" % (epoch+1, num_epochs))
-        print ("network: %d/%d" % (i+1, M))
+    for i in range(M):
+        network = ToyNet(model_id + "_%d" % i, project_dir="./root/evaluating_bdl/toyClassification").to(device)
 
-        network.train() # (set in training mode, this affects BatchNorm and dropout)
-        batch_losses = []
-        for step, (x, y) in enumerate(train_loader):
-            x = Variable(x).cuda() # (shape: (batch_size, 2))
-            y = Variable(y).cuda() # (shape: (batch_size, ))
+        optimizer = torch.optim.Adam(network.parameters(), lr=learning_rate)
 
-            logits = network(x) # (shape: (batch_size, num_classes)) (num_classes==2)
+        epoch_losses_train = []
+        for epoch in range(num_epochs):
+            print ("###########################")
+            print ("######## NEW EPOCH ########")
+            print ("###########################")
+            print ("epoch: %d/%d" % (epoch+1, num_epochs))
+            print ("network: %d/%d" % (i+1, M))
 
-            ####################################################################
-            # compute the loss:
-            ####################################################################
-            loss = loss_fn(logits, y)
+            network.train() # (set in training mode, this affects BatchNorm and dropout)
+            batch_losses = []
+            for step, (x, y) in enumerate(train_loader):
+                x = Variable(x).to(device) # (shape: (batch_size, 2))
+                y = Variable(y).to(device) # (shape: (batch_size, ))
 
-            loss_value = loss.data.cpu().numpy()
-            batch_losses.append(loss_value)
+                logits = network(x) # (shape: (batch_size, num_classes)) (num_classes==2)
 
-            ########################################################################
-            # optimization step:
-            ########################################################################
-            optimizer.zero_grad() # (reset gradients)
-            loss.backward() # (compute gradients)
-            optimizer.step() # (perform optimization step)
+                ####################################################################
+                # compute the loss:
+                ####################################################################
+                loss = loss_fn(logits, y)
 
-        epoch_loss = np.mean(batch_losses)
-        epoch_losses_train.append(epoch_loss)
-        with open("%s/epoch_losses_train.pkl" % network.model_dir, "wb") as file:
-            pickle.dump(epoch_losses_train, file)
-        print ("train loss: %g" % epoch_loss)
-        plt.figure(1)
-        plt.plot(epoch_losses_train, "k^")
-        plt.plot(epoch_losses_train, "k")
-        plt.ylabel("loss")
-        plt.xlabel("epoch")
-        plt.title("train loss per epoch")
-        plt.savefig("%s/epoch_losses_train.png" % network.model_dir)
-        plt.close(1)
+                loss_value = loss.data.cpu().numpy()
+                batch_losses.append(loss_value)
 
-        # save the model weights to disk:
-        checkpoint_path = network.checkpoints_dir + "/model_" + model_id +"_epoch_" + str(epoch+1) + ".pth"
-        torch.save(network.state_dict(), checkpoint_path)
+                ########################################################################
+                # optimization step:
+                ########################################################################
+                optimizer.zero_grad() # (reset gradients)
+                loss.backward() # (compute gradients)
+                optimizer.step() # (perform optimization step)
+
+            epoch_loss = np.mean(batch_losses)
+            epoch_losses_train.append(epoch_loss)
+            with open("%s/epoch_losses_train.pkl" % network.model_dir, "wb") as file:
+                pickle.dump(epoch_losses_train, file)
+            print ("train loss: %g" % epoch_loss)
+            plt.figure(1)
+            plt.plot(epoch_losses_train, "k^")
+            plt.plot(epoch_losses_train, "k")
+            plt.ylabel("loss")
+            plt.xlabel("epoch")
+            plt.title("train loss per epoch")
+            plt.savefig("%s/epoch_losses_train.png" % network.model_dir)
+            plt.close(1)
+
+            # save the model weights to disk:
+            checkpoint_path = network.checkpoints_dir + "/model_" + model_id +"_epoch_" + str(epoch+1) + ".pth"
+            torch.save(network.state_dict(), checkpoint_path)

@@ -23,8 +23,8 @@ train_dataset = ToyDataset()
 train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=len(train_dataset))
 
 for step, (x, y) in enumerate(train_loader):
-    x = Variable(x).cuda() # (shape: (batch_size, 2))
-    y = Variable(y).cuda() # (shape: (batch_size, ))
+    x = Variable(x).to(device) # (shape: (batch_size, 2))
+    y = Variable(y).to(device) # (shape: (batch_size, ))
 
     nuts_kernel = NUTS(model, jit_compile=False,)
     posterior = MCMC(nuts_kernel, num_samples=1000, warmup_steps=1000, num_chains=1).run(x, y) # num_samples=1000, warmup_steps=1000

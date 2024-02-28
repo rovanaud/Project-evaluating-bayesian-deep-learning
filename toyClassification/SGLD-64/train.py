@@ -56,7 +56,7 @@ for i in range(10):
 
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 
-    network = ToyNet(model_id, project_dir="/root/evaluating_bdl/toyClassification").cuda()
+    network = ToyNet(model_id, project_dir="./root/evaluating_bdl/toyClassification").to(device)
 
     optimizer = torch.optim.SGD(network.parameters(), lr=learning_rate)
 
@@ -71,8 +71,8 @@ for i in range(10):
         network.train() # (set in training mode, this affects BatchNorm and dropout)
         batch_losses = []
         for step, (x, y) in enumerate(train_loader):
-            x = Variable(x).cuda() # (shape: (batch_size, 2))
-            y = Variable(y).cuda() # (shape: (batch_size, ))
+            x = Variable(x).to(device) # (shape: (batch_size, 2))
+            y = Variable(y).to(device) # (shape: (batch_size, ))
 
             logits = network(x) # (shape: (batch_size, num_classes)) (num_classes==2)
 
@@ -91,7 +91,7 @@ for i in range(10):
             loss_noise = 0.0
             for param in network.parameters():
                 if param.requires_grad:
-                    loss_noise += (1.0/math.sqrt(N))*math.sqrt(2.0/lr)*torch.sum(param*Variable(torch.normal(torch.zeros(param.size()), std=1.0).cuda()))
+                    loss_noise += (1.0/math.sqrt(N))*math.sqrt(2.0/lr)*torch.sum(param*Variable(torch.normal(torch.zeros(param.size()), std=1.0).to(device)))
 
             loss = loss_likelihood + loss_prior + loss_noise
 
